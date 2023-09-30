@@ -88,4 +88,4 @@ if menu == "PubMed Searcher":
         st.write(f"- Authors: {', '.join(article['authors'])}")
         st.write(f"- Journal: {article['journal']}")
         st.write(f"- Publication Date: {article['publication_date']}")
-        st.write(f"- Abstract: {article['abstract']
+        st.write(f"- Abstract: {article['abstract']}")
