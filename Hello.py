@@ -68,7 +68,7 @@ if menu == "PubMed Searcher":
   st.title("PubMed Searcher")
 
   # Validate the user input.
-  email = st.text_input("Enter your email:", type="email")
+  email = st.text_input("Enter your email:")
   if not email:
     st.error("Please enter a valid email address.")
     st.stop()
