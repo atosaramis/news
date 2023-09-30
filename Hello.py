@@ -8,8 +8,7 @@ def fetch_news(api_key, query, from_date, to_date, num_results):
 
 def fetch_pubmed(query, from_date, to_date, num_results):
     Entrez.email = st.session_state['email']  # Use email from session state
-    # ... rest of your fetch_pubmed code ...
-
+    pass  # Placeholder: replace with your actual code
 
 menu = st.sidebar.selectbox("Choose a section", ["PubMed Searcher", "News API Searcher"])
 
