@@ -4,45 +4,88 @@ import requests
 from Bio import Entrez
 
 def fetch_news(api_key, query, from_date, to_date, num_results):
-    # ... rest of your fetch_news code ...
+  """Fetches news articles from the News API.
+
+  Args:
+    api_key: The NewsAPI key.
+    query: The search query.
+    from_date: The start date for the search.
+    to_date: The end date for the search.
+    num_results: The number of results to return.
+
+  Returns:
+    A list of news articles.
+  """
+
+  url = "https://newsapi.org/v2/everything?q={}&from={}&to={}&apiKey={}&pageSize={}"
+  response = requests.get(url.format(query, from_date, to_date, api_key, num_results))
+  articles = response.json()['articles']
+  return articles
 
 def fetch_pubmed(query, from_date, to_date, num_results):
-    Entrez.email = st.session_state['email']  # Use email from session state
-    pass  # Placeholder: replace with your actual code
+  """Fetches PubMed articles.
+
+  Args:
+    query: The search query.
+    from_date: The start date for the search.
+    to_date: The end date for the search.
+    num_results: The number of results to return.
+
+  Returns:
+    A list of PubMed articles.
+  """
+
+  Entrez.email = st.session_state['email']
+  handler = Entrez.esearch(db="pubmed", term=query, datetype="pdat", mindate=from_date, maxdate=to_date, retmax=num_results)
+  record = Entrez.read(handler)
+  pmids = record["IdList"]
+
+  articles = []
+  for pmid in pmids:
+    article = Entrez.efetch(db="pubmed", id=pmid, retmode="xml")
+    article_record = Entrez.read(article)[0]
+
+    articles.append({
+      "title": article_record["Article"]["ArticleTitle"],
+      "abstract": article_record["Article"]["Abstract"]["AbstractText"][0],
+      "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}",
+      "authors": [author["LastName"] + ", " + author["FirstName"] for author in article_record["Article"]["AuthorList"]],
+      "journal": article_record["Article"]["Journal"],
+      "publication_date": article_record["Article"]["PublicationDate"],
+    })
+
+  return articles
 
 menu = st.sidebar.selectbox("Choose a section", ["PubMed Searcher", "News API Searcher"])
 
 if menu == "PubMed Searcher":
-    st.title("PubMed Searcher")
-    if 'email' not in st.session_state:
-        st.session_state['email'] = st.text_input("Enter your email:")
+  st.title("PubMed Searcher")
 
-    if st.session_state['email']:
-        query = st.text_input("Search Term:", "COVID-19")
-        from_date = st.date_input("From Date:", datetime.now().date())
-        to_date = st.date_input("To Date:", datetime.now().date())
-        num_results = st.number_input("Number of Results to Return:", 1, 100, 10)
+  # Validate the user input.
+  if not st.session_state['email']:
+    st.session_state['email'] = st.text_input("Enter your email:", type="email")
 
-        if st.button("Fetch Articles"):
-            # ... rest of your PubMed code ...
+  if not st.session_state['email']:
+    st.error("Please enter a valid email address.")
+    st.stop()
 
-elif menu == "News API Searcher":
-    st.title("News API Searcher")
-    api_key = st.text_input("Enter your NewsAPI key:", type="password")
+  # Display the search form.
+  query = st.text_input("Search Term:", "COVID-19")
+  from_date = st.date_input("From Date:", datetime.now().date())
+  to_date = st.date_input("To Date:", datetime.now().date())
+  num_results = st.number_input("Number of Results to Return:", 1, 100, 10)
 
-    if api_key:
-        query = st.text_input("Search Term:", "Python")
-        date_range = st.date_input("Date Range:", [datetime.now().date(), datetime.now().date()])
-        num_results = st.number_input("Number of Results to Return:", 1, 100, 10)
+  # Fetch the search results.
+  if st.button("Fetch Articles"):
+    st.write("Fetching articles...")
+    articles = fetch_pubmed(query, from_date, to_date, num_results)
 
-        if st.button("Fetch News"):
-            from_date = date_range[0].strftime('%Y-%m-%d')
-            to_date = date_range[1].strftime('%Y-%m-%d')
-            articles = fetch_news(api_key, query, from_date, to_date, num_results)
-
-            for article in articles:
-                st.write(f"### [{article['title']}]({article['url']})")
-                st.write(f"- Source: {article['source']['name']}")
-                st.write(f"- Published At: {article['publishedAt']}")
-                st.write(f"- Description: {article['description']}")
-                st.write("---")
+    # Display the search results.
+    if articles:
+      st.write("Search results:")
+      for article in articles:
+        st.write(f"### [{article['title']}]({article['url']})")
+        st.write(f"- Authors: {', '.join(article['authors'])}")
+        st.write(f"- Journal: {article['journal']}")
+        st.write(f"- Publication Date: {article['publication_date']}")
+        st.write(f"- Abstract: {article['abstract']
