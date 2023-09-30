@@ -10,6 +10,7 @@ def fetch_pubmed(query, from_date, to_date, num_results):
     Entrez.email = st.session_state['email']  # Use email from session state
     # ... rest of your fetch_pubmed code ...
 
+
 menu = st.sidebar.selectbox("Choose a section", ["PubMed Searcher", "News API Searcher"])
 
 if menu == "PubMed Searcher":
