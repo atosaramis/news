@@ -1,3 +1,3 @@
-streamlit==1.27.1
-requests>=2.27.0
-biopython==1.81
+streamlit
+requests
+biopython
