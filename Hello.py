@@ -17,12 +17,6 @@ def get_articles(api_key, keyword, from_date, to_date, num_results):
     response = requests.get(url, params=params)
     return response.json()
 
-# Function to download data as a csv file
-def get_table_download_link(df):
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    return f'<a href="data:file/csv;base64,{b64}" download="articles.csv">Download CSV File</a>'
-
 # Streamlit app
 st.title('News Search')
 
@@ -37,5 +31,4 @@ if api_key:
     if keyword and from_date and to_date and num_results:
         articles = get_articles(api_key, keyword, from_date.strftime('%Y-%m-%d'), to_date.strftime('%Y-%m-%d'), num_results)
         df = pd.DataFrame(articles['articles'])
-        st.write(df)
-        st.markdown(get_table_download_link(df), unsafe_allow_html=True)
+        st.markdown(df.to_markdown())
