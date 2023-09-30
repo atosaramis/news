@@ -3,8 +3,13 @@ from datetime import datetime
 import requests
 from Bio import Entrez
 
+# Requirements.txt file:
+# streamlit
+# requests
+# biopython
+
 def fetch_news(api_key, query, from_date, to_date, num_results):
-  """Fetches news articles from the News API.
+  """Fetches news articles from the NewsAPI.
 
   Args:
     api_key: The NewsAPI key.
@@ -88,4 +93,3 @@ if menu == "PubMed Searcher":
         st.write(f"- Authors: {', '.join(article['authors'])}")
         st.write(f"- Journal: {article['journal']}")
         st.write(f"- Publication Date: {article['publication_date']}")
-        st.write(f"- Abstract: {article['abstract']}")
