@@ -74,4 +74,21 @@ if menu == "PubMed Searcher":
     st.stop()
 
   # Display the search form.
-  query = st.text_input("Search Term:", "COVID-19
+  query = st.text_input("Search Term:", "COVID-19")
+  from_date = st.date_input("From Date:", datetime.now().date())
+  to_date = st.date_input("To Date:", datetime.now().date())
+  num_results = st.number_input("Number of Results to Return:", 1, 100, 10)
+
+  # Fetch the search results.
+  if st.button("Fetch Articles"):
+    st.write("Fetching articles...")
+    articles = fetch_pubmed(query, from_date, to_date, num_results, email)
+
+    # Display the search results.
+    if articles:
+      st.write("Search results:")
+      for article in articles:
+        st.write(f"### [{article['title']}]({article['url']})")
+        st.write(f"- Authors: {', '.join(article['authors'])}")
+        st.write(f"- Journal: {article['journal']}")
+        st.write(f"- Publication Date: {article['publication_date']}")
