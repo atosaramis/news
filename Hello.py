@@ -1,51 +1,41 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import requests
+from datetime import datetime
+import pandas as pd
+import base64
 
-LOGGER = get_logger(__name__)
+# Function to get the news articles
+def get_articles(api_key, keyword, from_date, to_date, num_results):
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": keyword,
+        "from": from_date,
+        "to": to_date,
+        "pageSize": num_results,
+        "apiKey": api_key
+    }
+    response = requests.get(url, params=params)
+    return response.json()
 
+# Function to download data as a csv file
+def get_table_download_link(df):
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    return f'<a href="data:file/csv;base64,{b64}" download="articles.csv">Download CSV File</a>'
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+# Streamlit app
+st.title('News Search')
 
-    st.write("# Welcome to Streamlit! 👋")
+api_key = st.text_input('Enter your NewsAPI API key', type="password")  # Hide the API key
 
-    st.sidebar.success("Select a demo above.")
+if api_key:
+    keyword = st.text_input('Enter a keyword to search for')
+    from_date = st.date_input('Choose a start date')
+    to_date = st.date_input('Choose an end date')
+    num_results = st.number_input('Enter the number of results to return', min_value=1, max_value=100)
 
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
-
-if __name__ == "__main__":
-    run()
+    if keyword and from_date and to_date and num_results:
+        articles = get_articles(api_key, keyword, from_date.strftime('%Y-%m-%d'), to_date.strftime('%Y-%m-%d'), num_results)
+        df = pd.DataFrame(articles['articles'])
+        st.write(df)
+        st.markdown(get_table_download_link(df), unsafe_allow_html=True)
