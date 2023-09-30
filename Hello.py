@@ -8,6 +8,9 @@ from Bio import Entrez
 # requests
 # biopython
 
+if 'email' not in st.session_state:
+  st.session_state['email'] = None
+
 def fetch_news(api_key, query, from_date, to_date, num_results):
   """Fetches news articles from the NewsAPI.
 
